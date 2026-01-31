@@ -1,0 +1,43 @@
+{
+  "name": "@dreamer/payment",
+  "version": "1.0.0-beta.1",
+  "exports": {
+    ".": "./src/mod.ts",
+    "./adapters": "./src/adapters/mod.ts",
+    "./adapters/stripe": "./src/adapters/stripe.ts",
+    "./adapters/paypal": "./src/adapters/paypal.ts",
+    "./adapters/alipay": "./src/adapters/alipay.ts",
+    "./adapters/wechat": "./src/adapters/wechat.ts",
+    "./adapters/apple-pay": "./src/adapters/apple-pay.ts",
+    "./adapters/google-pay": "./src/adapters/google-pay.ts",
+    "./adapters/unionpay": "./src/adapters/unionpay.ts",
+    "./adapters/web3": "./src/adapters/web3.ts"
+  },
+  "imports": {
+    "@dreamer/test": "jsr:@dreamer/test@^1.0.0-beta.40",
+    "@dreamer/crypto": "jsr:@dreamer/crypto@^1.0.0-beta.2"
+  },
+  "tasks": {
+    "test": "deno test -A tests/",
+    "check": "deno check src/mod.ts",
+    "lint": "deno lint src/ tests/",
+    "fmt": "deno fmt src/ tests/"
+  },
+  "publish": {
+    "include": [
+      "src/**/*.ts",
+      "deno.json",
+      "README.md",
+      "LICENSE.md"
+    ],
+    "exclude": [
+      "tests/**",
+      "**/*.test.ts"
+    ]
+  },
+  "nodeModulesDir": "auto",
+  "compilerOptions": {
+    "strict": true,
+    "lib": ["esnext", "dom", "dom.iterable", "dom.asynciterable", "deno.ns", "deno.window"]
+  }
+}

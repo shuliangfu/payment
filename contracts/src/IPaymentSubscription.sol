@@ -1,0 +1,453 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+/**
+ * @title IPaymentSubscription
+ * @author @dreamer/payment
+ * @notice Payment subscription contract interface
+ * @dev Implement this interface to support Web3 subscription payment functionality
+ * 
+ * Usage flow:
+ * 1. Merchant calls createPlan to create subscription plan
+ * 2. User first approves tokens to contract
+ * 3. User calls subscribe to create subscription
+ * 4. Backend periodically calls charge to execute payments
+ * 5. User can cancel/pause subscription at any time
+ */
+interface IPaymentSubscription {
+
+    // ============================================================================
+    // Event Definitions
+    // ============================================================================
+
+    /// @notice Plan created event
+    /// @param planId Plan ID
+    /// @param merchant Merchant address
+    /// @param amount Amount per period
+    /// @param token Token address
+    /// @param interval Charge interval (seconds)
+    event PlanCreated(
+        bytes32 indexed planId,
+        address indexed merchant,
+        uint256 amount,
+        address token,
+        uint32 interval
+    );
+
+    /// @notice Plan updated event
+    /// @param planId Plan ID
+    /// @param active Whether active
+    event PlanUpdated(
+        bytes32 indexed planId,
+        bool active
+    );
+
+    /// @notice Subscription created event
+    /// @param subscriptionId Subscription ID
+    /// @param planId Plan ID
+    /// @param subscriber Subscriber address
+    /// @param startTime Start time
+    event SubscriptionCreated(
+        bytes32 indexed subscriptionId,
+        bytes32 indexed planId,
+        address indexed subscriber,
+        uint256 startTime
+    );
+
+    /// @notice Subscription status changed event
+    /// @param subscriptionId Subscription ID
+    /// @param oldStatus Old status
+    /// @param newStatus New status
+    event SubscriptionStatusChanged(
+        bytes32 indexed subscriptionId,
+        uint8 oldStatus,
+        uint8 newStatus
+    );
+
+    /// @notice Subscription canceled event
+    /// @param subscriptionId Subscription ID
+    /// @param cancelTime Cancel time
+    /// @param immediately Whether canceled immediately
+    event SubscriptionCanceled(
+        bytes32 indexed subscriptionId,
+        uint256 cancelTime,
+        bool immediately
+    );
+
+    /// @notice Payment executed event
+    /// @param subscriptionId Subscription ID
+    /// @param amount Amount
+    /// @param timestamp Timestamp
+    /// @param periodStart Period start time
+    /// @param periodEnd Period end time
+    event PaymentExecuted(
+        bytes32 indexed subscriptionId,
+        uint256 amount,
+        uint256 timestamp,
+        uint256 periodStart,
+        uint256 periodEnd
+    );
+
+    /// @notice Payment failed event
+    /// @param subscriptionId Subscription ID
+    /// @param reason Failure reason
+    event PaymentFailed(
+        bytes32 indexed subscriptionId,
+        uint8 reason
+    );
+
+    /// @notice Refund event
+    /// @param subscriptionId Subscription ID
+    /// @param to Refund address
+    /// @param amount Refund amount
+    event Refunded(
+        bytes32 indexed subscriptionId,
+        address indexed to,
+        uint256 amount
+    );
+
+    /// @notice One-time payment event
+    /// @param orderId Order ID
+    /// @param payer Payer
+    /// @param merchant Merchant
+    /// @param amount Amount
+    /// @param token Token address
+    event PaymentReceived(
+        bytes32 indexed orderId,
+        address indexed payer,
+        address indexed merchant,
+        uint256 amount,
+        address token
+    );
+
+    // ============================================================================
+    // Enum Definitions
+    // ============================================================================
+
+    // Note: Solidity interfaces cannot define enums, the following is for documentation only
+    // Please define these enums in the implementing contract
+
+    // SubscriptionStatus:
+    //   0 = Active    - Active
+    //   1 = Paused    - Paused
+    //   2 = Canceled  - Canceled
+    //   3 = Expired   - Expired (insufficient allowance)
+
+    // ChargeFailReason:
+    //   0 = Success            - Can charge
+    //   1 = NotDue             - Not due yet
+    //   2 = InsufficientBalance - Insufficient balance
+    //   3 = NotApproved        - Not approved/insufficient allowance
+    //   4 = Paused             - Paused
+    //   5 = Canceled           - Canceled
+    //   6 = PlanInactive       - Plan inactive
+
+    // ============================================================================
+    // Plan Management
+    // ============================================================================
+
+    /**
+     * @notice Create subscription plan
+     * @dev Only merchant can create plans, planId is generated by backend to ensure uniqueness
+     * @param planId Plan ID (bytes32, generated by backend)
+     * @param amount Amount per period (in token's smallest unit, e.g., USDT has 6 decimals)
+     * @param token Token address (address(0) for native token ETH/MATIC etc.)
+     * @param interval Charge interval (seconds, e.g., 30 days = 2592000)
+     * @param merchantAddress Merchant receiving address
+     */
+    function createPlan(
+        bytes32 planId,
+        uint256 amount,
+        address token,
+        uint32 interval,
+        address merchantAddress
+    ) external;
+
+    /**
+     * @notice Update plan status (activate/deactivate)
+     * @dev Only plan creator can update
+     * @param planId Plan ID
+     * @param active Whether active
+     */
+    function updatePlan(bytes32 planId, bool active) external;
+
+    /**
+     * @notice Query plan information
+     * @param planId Plan ID
+     * @return amount Amount per period
+     * @return token Token address
+     * @return interval Charge interval (seconds)
+     * @return merchant Merchant address
+     * @return active Whether active
+     * @return subscriberCount Subscriber count
+     */
+    function getPlan(bytes32 planId) external view returns (
+        uint256 amount,
+        address token,
+        uint32 interval,
+        address merchant,
+        bool active,
+        uint256 subscriberCount
+    );
+
+    /**
+     * @notice Check if plan exists
+     * @param planId Plan ID
+     * @return exists Whether exists
+     */
+    function planExists(bytes32 planId) external view returns (bool exists);
+
+    // ============================================================================
+    // Subscription Management
+    // ============================================================================
+
+    /**
+     * @notice User creates subscription
+     * @dev User needs to first call token contract's approve to authorize sufficient amount
+     *      First charge executes immediately upon subscription creation
+     * @param planId Plan ID
+     * @return subscriptionId Generated subscription ID
+     */
+    function subscribe(bytes32 planId) external payable returns (bytes32 subscriptionId);
+
+    /**
+     * @notice User creates subscription (with trial period)
+     * @param planId Plan ID
+     * @param trialDays Trial days (no charge during trial period)
+     * @return subscriptionId Generated subscription ID
+     */
+    function subscribeWithTrial(
+        bytes32 planId, 
+        uint32 trialDays
+    ) external returns (bytes32 subscriptionId);
+
+    /**
+     * @notice Cancel subscription
+     * @dev Both subscriber and merchant can cancel
+     * @param subscriptionId Subscription ID
+     * @param immediately Whether to cancel immediately
+     *        - true: Cancel immediately, remaining time in current period is forfeited
+     *        - false: Cancel at end of current period
+     */
+    function cancelSubscription(
+        bytes32 subscriptionId, 
+        bool immediately
+    ) external;
+
+    /**
+     * @notice Pause subscription
+     * @dev No charges during pause, resumes from pause point after resuming
+     * @param subscriptionId Subscription ID
+     */
+    function pauseSubscription(bytes32 subscriptionId) external;
+
+    /**
+     * @notice Resume subscription
+     * @dev Only subscriber can resume
+     * @param subscriptionId Subscription ID
+     */
+    function resumeSubscription(bytes32 subscriptionId) external;
+
+    /**
+     * @notice Query subscription details
+     * @param subscriptionId Subscription ID
+     * @return subscriber Subscriber address
+     * @return planId Plan ID
+     * @return status Status (0=active, 1=paused, 2=canceled, 3=expired)
+     * @return startTime Subscription start time
+     * @return currentPeriodStart Current period start time
+     * @return currentPeriodEnd Current period end time
+     * @return cancelAtPeriodEnd Whether to cancel at period end
+     */
+    function getSubscription(bytes32 subscriptionId) external view returns (
+        address subscriber,
+        bytes32 planId,
+        uint8 status,
+        uint256 startTime,
+        uint256 currentPeriodStart,
+        uint256 currentPeriodEnd,
+        bool cancelAtPeriodEnd
+    );
+
+    /**
+     * @notice Check if subscription exists
+     * @param subscriptionId Subscription ID
+     * @return exists Whether exists
+     */
+    function subscriptionExists(bytes32 subscriptionId) external view returns (bool exists);
+
+    /**
+     * @notice Get all subscriptions by user
+     * @param subscriber Subscriber address
+     * @return subscriptionIds Subscription ID list
+     */
+    function getSubscriptionsByUser(address subscriber) external view returns (
+        bytes32[] memory subscriptionIds
+    );
+
+    /**
+     * @notice Get all subscriptions by plan
+     * @param planId Plan ID
+     * @param offset Offset
+     * @param limit Limit
+     * @return subscriptionIds Subscription ID list
+     * @return total Total count
+     */
+    function getSubscriptionsByPlan(
+        bytes32 planId,
+        uint256 offset,
+        uint256 limit
+    ) external view returns (
+        bytes32[] memory subscriptionIds,
+        uint256 total
+    );
+
+    // ============================================================================
+    // Payment Execution
+    // ============================================================================
+
+    /**
+     * @notice Execute subscription charge
+     * @dev Anyone can call, but only due subscriptions can be successfully charged
+     *      After successful charge, currentPeriodStart and currentPeriodEnd are updated
+     * @param subscriptionId Subscription ID
+     * @return success Whether successful
+     */
+    function charge(bytes32 subscriptionId) external returns (bool success);
+
+    /**
+     * @notice Batch execute charges
+     * @dev Used for backend scheduled tasks to batch process due subscriptions
+     * @param subscriptionIds Subscription ID list
+     * @return results Execution result for each subscription
+     */
+    function batchCharge(bytes32[] calldata subscriptionIds) external returns (
+        bool[] memory results
+    );
+
+    /**
+     * @notice Check if subscription can be charged
+     * @param subscriptionId Subscription ID
+     * @return canChargeNow Whether can charge now
+     * @return reason Reason code (see ChargeFailReason enum)
+     */
+    function canCharge(bytes32 subscriptionId) external view returns (
+        bool canChargeNow,
+        uint8 reason
+    );
+
+    /**
+     * @notice Get all pending charges
+     * @dev Used for backend scheduled tasks to query subscriptions needing processing
+     * @param offset Offset (pagination)
+     * @param limit Limit
+     * @return subscriptionIds Pending charge subscription list
+     * @return total Total pending charges
+     */
+    function getPendingCharges(
+        uint256 offset, 
+        uint256 limit
+    ) external view returns (
+        bytes32[] memory subscriptionIds,
+        uint256 total
+    );
+
+    /**
+     * @notice Get subscription payment history
+     * @param subscriptionId Subscription ID
+     * @param offset Offset
+     * @param limit Limit
+     * @return amounts Amount list
+     * @return timestamps Timestamp list
+     * @return total Total payment count
+     */
+    function getPaymentHistory(
+        bytes32 subscriptionId,
+        uint256 offset,
+        uint256 limit
+    ) external view returns (
+        uint256[] memory amounts,
+        uint256[] memory timestamps,
+        uint256 total
+    );
+
+    // ============================================================================
+    // Refund
+    // ============================================================================
+
+    /**
+     * @notice Merchant refunds to user
+     * @dev Only merchant can initiate refund, merchant needs to first transfer sufficient tokens to contract
+     * @param subscriptionId Subscription ID
+     * @param amount Refund amount
+     * @param to Refund address (address(0) refunds to subscriber)
+     */
+    function refund(
+        bytes32 subscriptionId,
+        uint256 amount,
+        address to
+    ) external payable;
+
+    // ============================================================================
+    // One-time Payment (non-subscription)
+    // ============================================================================
+
+    /**
+     * @notice One-time payment
+     * @dev Used for non-subscription single payment scenarios
+     *      - Native token: Pay via msg.value
+     *      - ERC20: Needs approve first
+     * @param orderId Order ID (generated by backend, ensure uniqueness)
+     * @param amount Amount (used for ERC20, ignored for native token)
+     * @param token Token address (address(0) for native token)
+     * @param merchant Merchant address
+     */
+    function pay(
+        bytes32 orderId,
+        uint256 amount,
+        address token,
+        address merchant
+    ) external payable;
+
+    /**
+     * @notice Query one-time payment status
+     * @param orderId Order ID
+     * @return paid Whether paid
+     * @return payer Payer address
+     * @return merchant Merchant address
+     * @return amount Amount
+     * @return token Token address
+     * @return timestamp Payment time
+     */
+    function getPayment(bytes32 orderId) external view returns (
+        bool paid,
+        address payer,
+        address merchant,
+        uint256 amount,
+        address token,
+        uint256 timestamp
+    );
+
+    // ============================================================================
+    // Admin Functions
+    // ============================================================================
+
+    /**
+     * @notice Get contract version
+     * @return version Version number
+     */
+    function version() external pure returns (string memory version);
+
+    /**
+     * @notice Get supported tokens list
+     * @return tokens Token address list
+     */
+    function getSupportedTokens() external view returns (address[] memory tokens);
+
+    /**
+     * @notice Check if token is supported
+     * @param token Token address
+     * @return supported Whether supported
+     */
+    function isTokenSupported(address token) external view returns (bool supported);
+}

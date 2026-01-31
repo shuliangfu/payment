@@ -1,0 +1,44 @@
+[profile.default]
+# 目录配置
+src = "src"
+test = "test"
+script = "deploy"
+out = "build/out"
+cache_path = "build/cache"
+broadcast = "broadcast"
+
+# 库目录配置（如果需要使用外部库，取消注释并安装）
+# libs = ["lib"]
+
+# 编译器配置
+# 注意：Uniswap V2 使用 Solidity 0.5.16 和 0.6.6，项目使用 0.8.18
+# 启用自动检测 Solidity 版本，Foundry 会自动下载并使用对应的编译器版本
+auto_detect_solc = true  # 自动检测并下载需要的 Solidity 版本
+solc_version = "0.8.20"  # 默认版本（用于项目自己的合约，如果 auto_detect_solc 为 false）
+evm_version = "shanghai"  # EVM 版本：london, berlin, shanghai, cancun 等
+optimizer = true          # 启用优化器
+optimizer_runs = 200      # 优化器运行次数（影响代码大小 vs gas 成本）
+
+# 导入路径配置：不使用 lib 下外部依赖（已移除 pancake-swap），仅用 src 内相对路径
+auto_detect_remappings = false  # 关闭自动检测，避免引用已删除的 lib 依赖
+remappings = []                 # 显式不使用任何 remapping
+
+# 编译选项
+cache = true              # 启用编译缓存
+extra_output = ["abi", "evm.bytecode", "evm.deployedBytecode", "metadata"]
+build_info = true         # 生成构建信息（用于验证）
+
+# 测试配置
+fuzz = { runs = 256 }     # Fuzz 测试运行次数
+invariant = { runs = 256 } # 不变性测试运行次数
+
+# 性能配置
+# jobs = 0               # 并行编译任务数（某些版本不支持，使用默认值）
+
+# 代码格式化（2 空格缩进，与 .prettierrc 一致）
+[fmt]
+tab_width = 2
+
+# 代码检查
+[lint]
+lint_on_build = true      # 编译时进行 lint 检查

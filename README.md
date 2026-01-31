@@ -262,6 +262,54 @@ console.log("当前模式:", watcher.getMode()); // "websocket" 或 "polling"
 // watcher.stop();
 ```
 
+### Web3 合约部署
+
+Web3 订阅支付功能需要部署智能合约。合约源码位于 `contracts` 目录，请从 GitHub 下载：
+
+```bash
+# 克隆仓库获取合约代码
+git clone https://github.com/shuliangfu/payment.git
+cd payment/contracts
+```
+
+**使用 @dreamer/foundry 部署：**
+
+```bash
+# 1. 安装 Foundry CLI（全局安装，一次性操作）
+deno run -A jsr:@dreamer/foundry/setup
+
+# 2. 进入合约目录
+cd contracts
+
+# 3. 配置网络（编辑 config/web3.json）
+# 配置 RPC URL、私钥等信息
+
+# 4. 部署合约
+foundry deploy --network local      # 本地测试网
+foundry deploy --network testnet    # 测试网
+foundry deploy --network mainnet    # 主网
+
+# 5. 验证合约（可选）
+foundry verify --network testnet -c PaymentSubscription --api-key YOUR_API_KEY
+```
+
+> 📚 **详细文档**: https://github.com/shuliangfu/foundry
+
+**配置合约地址：**
+
+```typescript
+const web3 = createWeb3Adapter({
+  merchantAddress: "0x...",
+  networks: ["bsc", "ethereum"],
+  subscriptionContracts: {
+    bsc: "0x部署的合约地址",
+    ethereum: "0x部署的合约地址",
+  },
+});
+```
+
+> ⚠️ **注意**: 订阅支付的周期性扣费需要由项目方在计划任务中调用合约的 `processSubscription` 方法执行。
+
 ---
 
 ## 🎨 使用示例

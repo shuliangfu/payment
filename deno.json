@@ -1,6 +1,6 @@
 {
   "name": "@dreamer/payment",
-  "version": "1.0.0-beta.1",
+  "version": "1.0.0-beta.2",
   "exports": {
     ".": "./src/mod.ts",
     "./adapters": "./src/adapters/mod.ts",
@@ -32,7 +32,9 @@
     ],
     "exclude": [
       "tests/**",
-      "**/*.test.ts"
+      "**/*.test.ts",
+      "contracts/**",
+      "examples/**"
     ]
   },
   "nodeModulesDir": "auto",

@@ -4,34 +4,38 @@
  * 测试模块导出和基础功能
  */
 
-import { describe, it, expect, beforeAll } from "@dreamer/test";
+import { describe, expect, it } from "@dreamer/test";
 
 // 导入所有模块，验证导出正确
+import { setPaymentLocale } from "../src/i18n.ts";
 import {
-  // 适配器
-  createStripeAdapter,
-  createPayPalAdapter,
-  createAlipayAdapter,
-  createWechatPayAdapter,
-  createApplePayAdapter,
-  createGooglePayAdapter,
-  createUnionPayAdapter,
-  createWeb3Adapter,
   createAdapter,
-  getSupportedAdapters,
-  // 货币转换
-  CurrencyConverter,
+  createAlipayAdapter,
+  createApplePayAdapter,
   createCurrencyConverter,
-  createFixedRatesProvider,
-  formatCurrency,
-  FIAT_CURRENCIES,
-  // 对账
-  PaymentReconciler,
-  InMemoryTransactionStore,
-  createReconciler,
   // 类型
   createDefaultLogger,
+  createFixedRatesProvider,
+  createGooglePayAdapter,
+  createPayPalAdapter,
+  createReconciler,
+  // 适配器
+  createStripeAdapter,
+  createUnionPayAdapter,
+  createWeb3Adapter,
+  createWechatPayAdapter,
+  // 货币转换
+  CurrencyConverter,
+  FIAT_CURRENCIES,
+  formatCurrency,
+  getSupportedAdapters,
+  InMemoryTransactionStore,
+  // 对账
+  PaymentReconciler,
 } from "../src/mod.ts";
+
+// 锁定中文 locale，确保 $tr 返回中文文案（CI 英文环境下断言不失败）
+setPaymentLocale("zh-CN");
 
 describe("Payment 模块导出测试", () => {
   it("应该导出所有适配器创建函数", () => {
@@ -151,7 +155,9 @@ describe("Web3 适配器测试", () => {
     });
 
     const clientConfig = adapter.getClientConfig();
-    expect(clientConfig.merchantAddress).toBe("0x742d35Cc6634C0532925a3b844Bc9e7595f1e888");
+    expect(clientConfig.merchantAddress).toBe(
+      "0x742d35Cc6634C0532925a3b844Bc9e7595f1e888",
+    );
     expect(clientConfig.networks).toContain("ethereum");
     expect(clientConfig.networks).toContain("polygon");
     expect(clientConfig.networks).toContain("bsc");

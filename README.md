@@ -16,7 +16,7 @@
 See [en-US](./docs/en-US/CHANGELOG.md) | [zh-CN](./docs/zh-CN/CHANGELOG.md) for
 full history.
 
-**Latest (v1.1.0 - 2026-07-23)**: **Added** – Node.js 22+ compatibility.
+**Latest (v1.0.0 - 2026-07-23)**: **Added** – Node.js 22+ compatibility.
 **Changed** – Split `web3.test.ts` (Anvil integration) into a separate
 `test:integration` task; CI runs unit tests only. Removed `deno.ns`/`deno.window`
 compiler libs; added `@dreamer/logger` (type-only) to imports; dependency bumps.

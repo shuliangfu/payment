@@ -15,7 +15,7 @@
 
 完整历史：[English](../en-US/CHANGELOG.md) | [中文](./CHANGELOG.md)。
 
-**最新（v1.1.0 - 2026-07-23）**：**新增** – Node.js 22+ 兼容。
+**最新（v1.0.0 - 2026-07-23）**：**新增** – Node.js 22+ 兼容。
 **变更** – 将 `web3.test.ts`（Anvil 集成测试）拆为独立的 `test:integration` 任务，
 CI 仅运行单元测试；移除 `deno.ns`/`deno.window` 编译 lib；新增 `@dreamer/logger`
 （type-only）至 imports；依赖升级。详见 [CHANGELOG](./CHANGELOG.md)。

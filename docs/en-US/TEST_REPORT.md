@@ -8,7 +8,7 @@
 
 | Metric        | Value                                  |
 | ------------- | -------------------------------------- |
-| Version       | 1.1.0                                  |
+| Version       | 1.0.0                                  |
 | Unit tests    | 84                                     |
 | Integration   | 5 (`web3.test.ts`, standalone task)    |
 | Passed        | 84 (unit)                              |

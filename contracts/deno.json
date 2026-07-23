@@ -8,12 +8,15 @@
   },
   "imports": {
     "@dreamer/foundry": "jsr:@dreamer/foundry@^1.6.2",
-		"@dreamer/test": "jsr:@dreamer/test@1.0.0-beta.23"
+    "@dreamer/test": "jsr:@dreamer/test@^1.0.10"
   },
   "nodeModulesDir": "auto",
   "fmt": {
     "files": {
-      "include": ["**/*.ts", "**/*.js"]
+      "include": [
+        "**/*.ts",
+        "**/*.js"
+      ]
     },
     "options": {
       "indentWidth": 2,
@@ -23,18 +26,30 @@
   },
   "lint": {
     "rules": {
-      "tags": ["recommended"],
-      "exclude": ["no-explicit-any"]
+      "tags": [
+        "recommended"
+      ],
+      "exclude": [
+        "no-explicit-any"
+      ]
     },
-    "include": ["deploy/**/*.ts", "tests/**/*.ts"]
+    "include": [
+      "deploy/**/*.ts",
+      "tests/**/*.ts"
+    ]
   },
   "compilerOptions": {
-    "lib": ["deno.window"],
+    "lib": [
+      "deno.window"
+    ],
     "strict": true,
     "noImplicitAny": false
   },
   "allowScripts": {
     "allow": [],
-    "deny": ["npm:esbuild@0.27.2", "npm:puppeteer@24.36.0"]
+    "deny": [
+      "npm:esbuild@0.27.2",
+      "npm:puppeteer@24.36.0"
+    ]
   }
 }

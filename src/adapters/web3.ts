@@ -15,6 +15,7 @@
  * @see https://docs.walletconnect.com/
  */
 
+import { $tr } from "../i18n.ts";
 import {
   createDefaultLogger,
   type Logger,
@@ -458,7 +459,7 @@ export function createWeb3Adapter(config: Web3PayConfig): PaymentAdapter {
       return DEFAULT_CHAIN_IDS[network];
     }
     // 未知网络，抛出错误
-    throw new Error(`未知网络 "${network}"，请在 customNetworks 中配置`);
+    throw new Error($tr("payment.adapters.web3.unknownNetwork", { network }));
   };
 
   /**
@@ -549,7 +550,7 @@ export function createWeb3Adapter(config: Web3PayConfig): PaymentAdapter {
       return DEFAULT_RPC_ENDPOINTS[network];
     }
 
-    throw new Error(`未知网络 "${network}"，请在 customNetworks 中配置 rpcUrl`);
+    throw new Error($tr("payment.adapters.web3.unknownNetworkRpcUrl", { network }));
   };
 
   /**
@@ -657,7 +658,7 @@ export function createWeb3Adapter(config: Web3PayConfig): PaymentAdapter {
     const result = await response.json();
 
     if (result.error) {
-      throw new Error(result.error.message || "RPC 调用失败");
+      throw new Error(result.error.message || $tr("payment.adapters.web3.rpcCallFailed"));
     }
 
     return result.result;
@@ -1298,7 +1299,7 @@ export function createTransferWatcher(config: WatchTransferConfig): TransferWatc
     });
     const json = await response.json();
     if (json.error) {
-      throw new Error(json.error.message || "RPC error");
+      throw new Error(json.error.message || $tr("payment.adapters.web3.rpcError"));
     }
     return json.result;
   };

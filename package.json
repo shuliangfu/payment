@@ -1,0 +1,39 @@
+{
+  "name": "@dreamer/payment",
+  "version": "1.1.0",
+  "description": "Unified payment integration (8 methods, multi-currency, reconciliation, Web3) for Deno, Bun, and Node.js 22+.",
+  "type": "module",
+  "license": "Apache-2.0",
+  "exports": {
+    ".": "./src/mod.ts",
+    "./adapters": "./src/adapters/mod.ts",
+    "./adapters/stripe": "./src/adapters/stripe.ts",
+    "./adapters/paypal": "./src/adapters/paypal.ts",
+    "./adapters/alipay": "./src/adapters/alipay.ts",
+    "./adapters/wechat": "./src/adapters/wechat.ts",
+    "./adapters/apple-pay": "./src/adapters/apple-pay.ts",
+    "./adapters/google-pay": "./src/adapters/google-pay.ts",
+    "./adapters/unionpay": "./src/adapters/unionpay.ts",
+    "./adapters/web3": "./src/adapters/web3.ts"
+  },
+  "scripts": {
+    "test": "bun test tests/crypto.test.ts tests/currency.test.ts tests/mod.test.ts tests/reconciliation.test.ts tests/subscription.test.ts",
+    "test:node": "tsx --tsconfig tsconfig.json --test --test-force-exit tests/crypto.test.ts tests/currency.test.ts tests/mod.test.ts tests/reconciliation.test.ts tests/subscription.test.ts",
+    "test:integration": "bun test tests/web3.test.ts",
+    "check": "deno check src/mod.ts"
+  },
+  "dependencies": {
+    "@dreamer/crypto": "npm:@jsr/dreamer__crypto@^1.1.0",
+    "@dreamer/i18n": "npm:@jsr/dreamer__i18n@^1.1.2",
+    "@dreamer/logger": "npm:@jsr/dreamer__logger@^1.1.0",
+    "@dreamer/runtime-adapter": "npm:@jsr/dreamer__runtime-adapter@^1.2.2"
+  },
+  "devDependencies": {
+    "@dreamer/test": "npm:@jsr/dreamer__test@^1.2.3",
+    "tsx": "^4.19.2"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "keywords": ["payment", "stripe", "paypal", "alipay", "wechat", "web3", "dreamer"]
+}

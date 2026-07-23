@@ -115,9 +115,9 @@ foundry verify --network local --contract MyToken
 deno run -A jsr:@dreamer/foundry/cli verify --network local --contract MyToken --api-key YOUR_API_KEY
 ```
 
-## 使用 @dreamer/foundry 库
+## 使用 @dreamer/foundry 包
 
-本项目使用 `@dreamer/foundry` 库进行部署和验证：
+本项目使用 `@dreamer/foundry` 包进行部署和验证：
 
 ```typescript
 import { createWeb3 } from "@dreamer/foundry";

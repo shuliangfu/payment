@@ -12,6 +12,7 @@
  * @see https://stripe.com/docs/api
  */
 
+import { $tr } from "../i18n.ts";
 import {
   createDefaultLogger,
   type CreateSubscriptionRequest,
@@ -140,7 +141,7 @@ export function createStripeAdapter(config: StripeConfig): SubscriptionPaymentAd
     const result = await response.json();
 
     if (!response.ok) {
-      throw new Error(result.error?.message || "Stripe API 请求失败");
+      throw new Error(result.error?.message || $tr("payment.adapters.stripe.apiRequestFailed"));
     }
 
     return result;

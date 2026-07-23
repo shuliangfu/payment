@@ -6,6 +6,8 @@
  * 提供统一的支付适配器接口和多种支付方式实现
  */
 
+import { $tr } from "../i18n.ts";
+
 // 导出 Stripe 适配器
 export {
   createStripeAdapter,
@@ -161,7 +163,7 @@ export function createAdapter<T extends PaymentAdapterName>(
 ): PaymentAdapter {
   const factory = adapterFactories[name];
   if (!factory) {
-    throw new Error(`未知的支付适配器: ${name}`);
+    throw new Error($tr("payment.adapters.unknownAdapter", { name }));
   }
   // @ts-ignore - 类型已通过泛型约束
   return factory(config);

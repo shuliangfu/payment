@@ -12,6 +12,7 @@
  * @see https://developer.paypal.com/docs/api/overview/
  */
 
+import { $tr } from "../i18n.ts";
 import {
   createDefaultLogger,
   type CreateSubscriptionRequest,
@@ -137,7 +138,7 @@ export function createPayPalAdapter(config: PayPalConfig): SubscriptionPaymentAd
     });
 
     if (!response.ok) {
-      throw new Error("获取 PayPal 访问令牌失败");
+      throw new Error($tr("payment.adapters.paypal.getAccessTokenFailed"));
     }
 
     const data = await response.json();
@@ -168,7 +169,7 @@ export function createPayPalAdapter(config: PayPalConfig): SubscriptionPaymentAd
 
     if (!response.ok) {
       const error = await response.json();
-      throw new Error(error.message || "PayPal API 请求失败");
+      throw new Error(error.message || $tr("payment.adapters.paypal.apiRequestFailed"));
     }
 
     // 某些请求可能返回空响应

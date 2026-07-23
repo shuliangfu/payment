@@ -1,0 +1,87 @@
+# CI: 三端跨平台测试（Deno / Bun / Node.js 22+），验证跨运行时兼容性
+# 注意：tests/web3.test.ts 为 Anvil 集成测试（需本地 http://127.0.0.1:8545 节点），
+#       CI 仅运行单元测试（crypto/currency/mod/reconciliation/subscription）。
+name: CI
+
+on:
+  push:
+    branches: [dev]
+  pull_request:
+    branches: [dev]
+
+# 工作流级 env：让基于 Node 的 GitHub Actions（如 checkout、setup-*）提前使用 Node 24 运行时，
+# 便于在官方强制升级前做性能/稳定性验证。参见 GitHub 文档中的 FORCE_JAVASCRIPT_ACTIONS_TO_NODE24。
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  # ─────────────────────────────────────────────────────────────────────────
+  # Deno（Linux / macOS / Windows）
+  # ─────────────────────────────────────────────────────────────────────────
+  test-deno:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.9
+
+      - name: Cache dependencies
+        continue-on-error: true
+        run: deno cache src/mod.ts
+
+      - name: Check
+        run: deno check src/mod.ts
+
+      - name: Lint
+        run: deno lint src/ tests/
+
+      - name: Test (Deno)
+        run: deno test -A tests/crypto.test.ts tests/currency.test.ts tests/mod.test.ts tests/reconciliation.test.ts tests/subscription.test.ts
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # Bun（Linux / macOS / Windows）
+  # ─────────────────────────────────────────────────────────────────────────
+  test-bun:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Test (Bun)
+        run: bun test tests/crypto.test.ts tests/currency.test.ts tests/mod.test.ts tests/reconciliation.test.ts tests/subscription.test.ts
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # Node.js 22（Linux / macOS / Windows）
+  # ─────────────────────────────────────────────────────────────────────────
+  test-node:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Test (Node)
+        run: npm run test:node

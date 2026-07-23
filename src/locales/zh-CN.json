@@ -1,0 +1,20 @@
+{
+  "payment": {
+    "adapters": {
+      "unknownAdapter": "未知的支付适配器: {name}",
+      "paypal": {
+        "getAccessTokenFailed": "获取 PayPal 访问令牌失败",
+        "apiRequestFailed": "PayPal API 请求失败"
+      },
+      "stripe": {
+        "apiRequestFailed": "Stripe API 请求失败"
+      },
+      "web3": {
+        "unknownNetwork": "未知网络 \"{network}\"，请在 customNetworks 中配置",
+        "unknownNetworkRpcUrl": "未知网络 \"{network}\"，请在 customNetworks 中配置 rpcUrl",
+        "rpcCallFailed": "RPC 调用失败",
+        "rpcError": "RPC error"
+      }
+    }
+  }
+}

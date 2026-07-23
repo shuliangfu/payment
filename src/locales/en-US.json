@@ -1,0 +1,20 @@
+{
+  "payment": {
+    "adapters": {
+      "unknownAdapter": "Unknown payment adapter: {name}",
+      "paypal": {
+        "getAccessTokenFailed": "Failed to get PayPal access token",
+        "apiRequestFailed": "PayPal API request failed"
+      },
+      "stripe": {
+        "apiRequestFailed": "Stripe API request failed"
+      },
+      "web3": {
+        "unknownNetwork": "Unknown network \"{network}\", please configure in customNetworks",
+        "unknownNetworkRpcUrl": "Unknown network \"{network}\", please configure rpcUrl in customNetworks",
+        "rpcCallFailed": "RPC call failed",
+        "rpcError": "RPC error"
+      }
+    }
+  }
+}
